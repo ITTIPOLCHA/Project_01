@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useContext } from 'react';
+import type { ReactNode } from 'react';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import AppLayout from './components/AppLayout';
 import Login from './pages/Login';
@@ -9,7 +10,7 @@ import Transactions from './pages/Transactions';
 import CalendarView from './pages/CalendarView';
 
 // Protected Route Component
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, isLoading } = useContext(AuthContext);
 
   if (isLoading) {
