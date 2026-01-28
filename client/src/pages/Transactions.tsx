@@ -51,6 +51,7 @@ const Transactions: React.FC = () => {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleFormFinish = async (values: any) => {
         setFormLoading(true);
         try {
@@ -91,6 +92,7 @@ const Transactions: React.FC = () => {
                 { text: 'Income', value: 'income' },
                 { text: 'Expense', value: 'expense' },
             ],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onFilter: (value: any, record: ITransaction) => record.type === value,
         },
         {
@@ -117,6 +119,7 @@ const Transactions: React.FC = () => {
         {
             title: 'Action',
             key: 'action',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             render: (_: any, record: ITransaction) => (
                 <Space size="middle">
                     <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { IUser } from '../types';
 
@@ -16,16 +16,11 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<IUser | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
+    const [user, setUser] = useState<IUser | null>(() => {
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setIsLoading(false);
-    }, []);
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
+    const isLoading = false;
 
     return (
         <AuthContext.Provider value={{ user, setUser, isLoading }}>

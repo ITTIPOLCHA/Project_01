@@ -22,7 +22,7 @@ const Dashboard: React.FC = () => {
                 setIncome(inc);
                 setExpense(exp);
                 setBalance(inc - exp);
-            } catch (error) {
+            } catch {
                 message.error('Failed to load data');
             }
         };

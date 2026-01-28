@@ -15,7 +15,7 @@ const CalendarView: React.FC = () => {
             try {
                 const res = await transactionService.getTransactions();
                 setTransactions(res.data);
-            } catch (error) {
+            } catch {
                 message.error('Failed to load transactions');
             }
         };
