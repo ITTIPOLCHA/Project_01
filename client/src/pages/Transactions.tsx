@@ -20,7 +20,7 @@ const Transactions: React.FC = () => {
         try {
             const res = await transactionService.getTransactions();
             setTransactions(res.data);
-        } catch (error) {
+        } catch {
             message.error('Failed to fetch transactions');
         } finally {
             setLoading(false);
@@ -46,7 +46,7 @@ const Transactions: React.FC = () => {
             await transactionService.deleteTransaction(id);
             message.success('Transaction deleted');
             fetchTransactions();
-        } catch (error) {
+        } catch {
             message.error('Failed to delete transaction');
         }
     };
@@ -63,7 +63,7 @@ const Transactions: React.FC = () => {
             }
             setIsModalVisible(false);
             fetchTransactions();
-        } catch (error) {
+        } catch {
             message.error('Operation failed');
         } finally {
             setFormLoading(false);
