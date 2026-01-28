@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, InputNumber, Select, Modal, DatePicker } from 'antd';
+import { Form, Input, InputNumber, Select, Modal } from 'antd';
 import type { ITransaction } from '../types';
 
 interface TransactionFormProps {

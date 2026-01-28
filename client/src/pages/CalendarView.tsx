@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Badge, message, Modal, List, Typography } from 'antd';
+import { Calendar, Badge, message, Modal, List } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import transactionService from '../services/transactionService';

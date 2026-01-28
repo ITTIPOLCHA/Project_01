@@ -5,7 +5,6 @@ import transactionService from '../services/transactionService';
 import type { ITransaction } from '../types';
 
 const Dashboard: React.FC = () => {
-    const [transactions, setTransactions] = useState<ITransaction[]>([]);
     const [income, setIncome] = useState(0);
     const [expense, setExpense] = useState(0);
     const [balance, setBalance] = useState(0);
@@ -15,7 +14,7 @@ const Dashboard: React.FC = () => {
             try {
                 const res = await transactionService.getTransactions();
                 const txs = res.data;
-                setTransactions(txs);
+                // setTransactions(txs); // Removed unused state set
 
                 const inc = txs.filter((t: ITransaction) => t.type === 'income').reduce((acc: number, t: ITransaction) => acc + t.amount, 0);
                 const exp = txs.filter((t: ITransaction) => t.type === 'expense').reduce((acc: number, t: ITransaction) => acc + t.amount, 0);
