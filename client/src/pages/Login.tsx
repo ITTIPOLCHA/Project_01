@@ -12,6 +12,7 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const { setUser } = useContext(AuthContext);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onFinish = async (values: any) => {
         setLoading(true);
         try {

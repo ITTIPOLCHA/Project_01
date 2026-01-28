@@ -20,7 +20,6 @@ const CalendarView: React.FC = () => {
             }
         };
         fetchTransactions();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const getListData = (value: Dayjs) => {
