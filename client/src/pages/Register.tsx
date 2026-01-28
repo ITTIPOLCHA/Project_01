@@ -20,7 +20,7 @@ const Register: React.FC = () => {
             setUser(userData);
             message.success('Registration successful');
             navigate('/');
-        } catch (error: any) {
+        } catch (error: unknown) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const msg = (error as any).response?.data?.message || 'Registration failed';
             message.error(msg);

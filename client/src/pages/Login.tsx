@@ -20,7 +20,7 @@ const Login: React.FC = () => {
             setUser(userData);
             message.success('Login successful');
             navigate('/');
-        } catch (error: any) {
+        } catch (error: unknown) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const msg = (error as any).response?.data?.message || 'Login failed';
             message.error(msg);
