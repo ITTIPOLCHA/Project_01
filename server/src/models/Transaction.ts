@@ -39,4 +39,8 @@ const TransactionSchema: Schema = new Schema({
     timestamps: true,
 });
 
+// Indexes for performance
+TransactionSchema.index({ user: 1, date: -1 });
+TransactionSchema.index({ user: 1, type: 1 });
+
 export default mongoose.model<ITransaction>('Transaction', TransactionSchema);

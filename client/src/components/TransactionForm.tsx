@@ -5,6 +5,7 @@ import type { ITransaction } from '../types';
 interface TransactionFormProps {
     visible: boolean;
     onCancel: () => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onFinish: (values: any) => void;
     initialValues?: Partial<ITransaction>;
     loading: boolean;
