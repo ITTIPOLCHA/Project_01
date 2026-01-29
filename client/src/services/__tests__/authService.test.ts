@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import authService from '../authService';
 import api from '../api';
 
@@ -18,7 +18,7 @@ describe('authService', () => {
     it('login calls api.post and stores user in localStorage', async () => {
         const mockUser = { name: 'Test User', token: 'mock-token' };
         // Mock successful API response
-        (api.post as any).mockResolvedValueOnce({ data: mockUser });
+        (api.post as Mock).mockResolvedValueOnce({ data: mockUser });
 
         const userData = { email: 'test@example.com', password: 'password123', remember: true };
         const result = await authService.login(userData);
@@ -33,7 +33,7 @@ describe('authService', () => {
 
     it('register calls api.post and stores user in localStorage', async () => {
         const mockUser = { name: 'New User', token: 'new-token' };
-        (api.post as any).mockResolvedValueOnce({ data: mockUser });
+        (api.post as Mock).mockResolvedValueOnce({ data: mockUser });
 
         const userData = { name: 'New User', email: 'new@example.com', password: 'password123' };
         const result = await authService.register(userData);

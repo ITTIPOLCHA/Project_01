@@ -19,27 +19,6 @@ const Transactions: React.FC = () => {
         queryKey: ['transactions'],
         queryFn: async () => {
             const res = await transactionService.getTransactions();
-            return res.data; // Assuming service returns { data: [...] } or direct array? 
-            // Checking service: return response.data. 
-            // If response.data IS the array, then good. 
-            // Wait, typical axios response.data is the body. 
-            // If backend returns array, then it is array.
-            // Previous code: setTransactions(res.data). 
-            // So res.data is the array.
-            // Double check: service code: return response.data.
-            // Previous code usage: const res = await service.getTransactions(); setTransactions(res.data).
-            // This implies service returns { data: [...] } ?
-            // Let's re-read service code.
-            // Service: const response = await api.get(API_URL); return response.data;
-            // Usage: const res = await transactionService.getTransactions(); setTransactions(res.data);
-            // This means transactionService.getTransactions() returns an object that HAS a .data property?
-            // BUT service returns response.data directly.
-            // Does response.data have a .data property?
-            // If backend returns { success: true, data: [...] }, then yes.
-            // If backend returns [...] directly, then previous code was WRONG or service returns full axios response?
-            // Service code: return response.data.
-            // So if previous usage was res.data, then response.data MUST have a .data property.
-            // I will assume previous usage was correct.
             return res.data;
         }
     });
@@ -97,12 +76,11 @@ const Transactions: React.FC = () => {
         deleteMutation.mutate(id);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleFormFinish = async (values: any) => {
+    const handleFormFinish = async (values: Omit<ITransaction, '_id' | 'date' | 'createdAt'>) => {
         if (editingTransaction && editingTransaction._id) {
             await updateMutation.mutateAsync({ id: editingTransaction._id, data: values });
         } else {
-            await addMutation.mutateAsync(values);
+            await addMutation.mutateAsync(values as unknown as ITransaction);
         }
     };
 
@@ -127,8 +105,7 @@ const Transactions: React.FC = () => {
                 { text: 'Income', value: 'income' },
                 { text: 'Expense', value: 'expense' },
             ],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onFilter: (value: any, record: ITransaction) => record.type === value,
+            onFilter: (value: boolean | React.Key, record: ITransaction) => record.type === value,
         },
         {
             title: 'Category',
@@ -154,8 +131,7 @@ const Transactions: React.FC = () => {
         {
             title: 'Action',
             key: 'action',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            render: (_: any, record: ITransaction) => (
+            render: (_: unknown, record: ITransaction) => (
                 <Space size="middle">
                     <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
                     <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record._id)}>

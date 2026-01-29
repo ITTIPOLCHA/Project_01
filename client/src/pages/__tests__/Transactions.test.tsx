@@ -41,7 +41,7 @@ describe('Transactions Page', () => {
             { _id: '1', amount: 100, category: 'Food', type: 'expense', date: '2023-01-01' },
             { _id: '2', amount: 2000, category: 'Salary', type: 'income', date: '2023-01-02' },
         ];
-        (transactionService.getTransactions as any).mockResolvedValue({ data: mockData });
+        (transactionService.getTransactions as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ data: mockData });
 
         renderTransactions();
 
@@ -54,7 +54,7 @@ describe('Transactions Page', () => {
     it('displays loading state initially', () => {
         // We can't easily check loading because it's fast, but useQuery handles it.
         // Antd Table has a loading prop.
-        (transactionService.getTransactions as any).mockImplementation(() => new Promise(() => { })); // Never resolve
+        (transactionService.getTransactions as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => new Promise(() => { })); // Never resolve
         renderTransactions();
         // Check for Antd spin or table loading class?
         // Hard to assert explicit loading text in Antd Table without digging DOM.

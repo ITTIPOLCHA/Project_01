@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Form, Input, InputNumber, Select, Modal, Upload, Button, message, Spin } from 'antd';
 import { CameraOutlined } from '@ant-design/icons';
-import Tesseract from 'tesseract.js';
 import type { ITransaction } from '../types';
+import { parseReceiptImage } from '../utils/receiptParser';
+import { TRANSACTION_CATEGORIES, TRANSACTION_TYPES } from '../utils/constants';
+
 
 interface TransactionFormProps {
     visible: boolean;
     onCancel: () => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onFinish: (values: any) => Promise<void>;
+    onFinish: (values: Omit<ITransaction, '_id' | 'date' | 'createdAt'>) => Promise<void>;
     initialValues?: Partial<ITransaction>;
     loading: boolean;
 }
@@ -35,47 +36,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         }
     }, [visible, initialValues, form]);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleScan = async (file: any) => {
+    const handleScan = async (file: File) => {
         setScanning(true);
         try {
-            const result = await Tesseract.recognize(file, 'tha+eng');
-            const text = result.data.text;
-            console.log('OCR Text:', text);
-
-            // Extract amount (e.g., 100.00, 1,200.50)
-            const amountMatch = text.match(/[\d,]+\.\d{2}/);
-            let amount = 0;
-            if (amountMatch) {
-                amount = parseFloat(amountMatch[0].replace(/,/g, ''));
-            }
-
-            // Extract recipient name (Thai name pattern - คนที่โอนไปให้)
-            // Look for patterns like "ไปยัง", "โอนไป", "ผู้รับ", or Thai name patterns
-            let recipientName = '';
-
-            // Pattern 1: After "ไปยัง" or "โอนไป" or "ผู้รับ"
-            const recipientPatterns = [
-                /(?:ไปยัง|โอนไป|ผู้รับ|to|To|TO)[:\s]*([ก-๙a-zA-Z\s]+)/,
-                /(?:นาย|นาง|นางสาว|Mr\.|Mrs\.|Ms\.)[ก-๙a-zA-Z\s]+/,
-            ];
-
-            for (const pattern of recipientPatterns) {
-                const match = text.match(pattern);
-                if (match) {
-                    recipientName = match[1] || match[0];
-                    recipientName = recipientName.trim().substring(0, 50); // Limit length
-                    break;
-                }
-            }
-
-            // If no recipient found, try to get any Thai name-like pattern
-            if (!recipientName) {
-                const thaiNameMatch = text.match(/[ก-๙]{2,}\s+[ก-๙]{2,}/);
-                if (thaiNameMatch) {
-                    recipientName = thaiNameMatch[0].trim();
-                }
-            }
+            const { amount, recipientName } = await parseReceiptImage(file);
 
             if (amount <= 0) {
                 message.warning('ไม่สามารถอ่านจำนวนเงินจากสลิปได้');
@@ -85,15 +49,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
             // Create transaction data and submit directly
             const transactionData = {
-                type: 'expense',
+                type: 'expense' as const,
                 amount: amount,
                 category: 'สลิป',
                 description: recipientName || 'สลิปโอนเงิน',
+                text: recipientName || 'สลิปโอนเงิน' // Should likely use the raw text or duplicate description? ITransaction defines 'text' and 'description'.
             };
 
             message.success(`บันทึกสลิป: ${amount} บาท - ${recipientName || 'สลิปโอนเงิน'}`);
-
-            // Stop scanning BEFORE submitting to prevent UI lock
             setScanning(false);
 
             // Close modal and submit
@@ -102,9 +65,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         } catch (error) {
             console.error(error);
             message.error('ไม่สามารถอ่านสลิปได้');
-            setScanning(false); // Ensure scanning is false on error
+            setScanning(false);
         }
         return false; // Prevent upload
+    };
+
+    const beforeUpload = (file: File) => {
+        handleScan(file);
+        return false; // Prevent default upload behavior
     };
 
     return (
@@ -113,10 +81,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             open={visible}
             onCancel={onCancel}
             onOk={() => form.submit()}
-            confirmLoading={loading} /* Only use loading (server), not scanning */
+            confirmLoading={loading}
         >
             <div style={{ marginBottom: 20, textAlign: 'center' }}>
-                <Upload beforeUpload={handleScan} showUploadList={false} accept="image/*">
+                <Upload beforeUpload={beforeUpload} showUploadList={false} accept="image/*">
                     <Button icon={<CameraOutlined />} loading={scanning}>
                         {scanning ? 'Scanning...' : 'Scan Receipt'}
                     </Button>
@@ -136,8 +104,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                         rules={[{ required: true, message: 'Please select type!' }]}
                     >
                         <Select>
-                            <Select.Option value="income">Income</Select.Option>
-                            <Select.Option value="expense">Expense</Select.Option>
+                            {TRANSACTION_TYPES.map(type => (
+                                <Select.Option key={type.value} value={type.value}>{type.label}</Select.Option>
+                            ))}
                         </Select>
                     </Form.Item>
 
@@ -155,14 +124,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                         rules={[{ required: true, message: 'Please input category!' }]}
                     >
                         <Select showSearch>
-                            <Select.Option value="Food">Food</Select.Option>
-                            <Select.Option value="Transport">Transport</Select.Option>
-                            <Select.Option value="Rent">Rent</Select.Option>
-                            <Select.Option value="Salary">Salary</Select.Option>
-                            <Select.Option value="Entertainment">Entertainment</Select.Option>
-                            <Select.Option value="Utilities">Utilities</Select.Option>
-                            <Select.Option value="สลิป">สลิป</Select.Option>
-                            <Select.Option value="Other">Other</Select.Option>
+                            {TRANSACTION_CATEGORIES.map(cat => (
+                                <Select.Option key={cat.value} value={cat.value}>{cat.label}</Select.Option>
+                            ))}
                         </Select>
                     </Form.Item>
 

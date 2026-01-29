@@ -43,7 +43,7 @@ describe('Login Page', () => {
     });
 
     it('calls login service and redirects on success', async () => {
-        (authService.login as any).mockResolvedValueOnce({ name: 'User', token: 'token' });
+        (authService.login as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ name: 'User', token: 'token' });
         renderLogin();
 
         fireEvent.change(screen.getByPlaceholderText('อีเมล'), { target: { value: 'test@test.com' } });
