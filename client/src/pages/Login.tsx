@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Form, Input, Button, Card, Typography, message } from 'antd';
+import { Form, Input, Button, Card, Typography, message, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
@@ -96,13 +96,27 @@ const Login: React.FC = () => {
                         name="email"
                         rules={[{ required: true, message: 'กรุณากรอกอีเมล!' }, { type: 'email', message: 'อีเมลไม่ถูกต้อง' }]}
                     >
-                        <Input prefix={<UserOutlined />} placeholder="อีเมล" size="large" />
+                        <Input
+                            prefix={<UserOutlined />}
+                            placeholder="อีเมล"
+                            size="large"
+                            autoComplete="username"
+                        />
                     </Form.Item>
                     <Form.Item
                         name="password"
                         rules={[{ required: true, message: 'กรุณากรอกรหัสผ่าน!' }]}
                     >
-                        <Input.Password prefix={<LockOutlined />} placeholder="รหัสผ่าน" size="large" />
+                        <Input.Password
+                            prefix={<LockOutlined />}
+                            placeholder="รหัสผ่าน"
+                            size="large"
+                            autoComplete="current-password"
+                        />
+                    </Form.Item>
+
+                    <Form.Item name="remember" valuePropName="checked" style={{ marginBottom: 12 }}>
+                        <Checkbox style={{ color: 'rgba(255,255,255,0.7)' }}>จดจำฉันไว้</Checkbox>
                     </Form.Item>
 
                     <Form.Item>

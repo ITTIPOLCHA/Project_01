@@ -93,14 +93,16 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
             message.success(`บันทึกสลิป: ${amount} บาท - ${recipientName || 'สลิปโอนเงิน'}`);
 
+            // Stop scanning BEFORE submitting to prevent UI lock
+            setScanning(false);
+
             // Close modal and submit
             await onFinish(transactionData);
 
         } catch (error) {
             console.error(error);
             message.error('ไม่สามารถอ่านสลิปได้');
-        } finally {
-            setScanning(false);
+            setScanning(false); // Ensure scanning is false on error
         }
         return false; // Prevent upload
     };
@@ -111,7 +113,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             open={visible}
             onCancel={onCancel}
             onOk={() => form.submit()}
-            confirmLoading={loading || scanning}
+            confirmLoading={loading} /* Only use loading (server), not scanning */
         >
             <div style={{ marginBottom: 20, textAlign: 'center' }}>
                 <Upload beforeUpload={handleScan} showUploadList={false} accept="image/*">
