@@ -39,33 +39,68 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     const handleScan = async (file: any) => {
         setScanning(true);
         try {
-            const result = await Tesseract.recognize(file, 'eng', {
+            const result = await Tesseract.recognize(file, 'tha+eng', {
                 logger: m => console.log(m)
             });
             const text = result.data.text;
             console.log('OCR Text:', text);
 
-            // Simple Regex to find amount (e.g., 100.00, 1,200.50)
+            // Extract amount (e.g., 100.00, 1,200.50)
             const amountMatch = text.match(/[\d,]+\.\d{2}/);
+            let amount = 0;
             if (amountMatch) {
-                const amount = parseFloat(amountMatch[0].replace(/,/g, ''));
-                form.setFieldsValue({ amount });
-                message.success(`Detected Amount: ${amount}`);
-            } else {
-                message.warning('Could not detect amount automatically');
+                amount = parseFloat(amountMatch[0].replace(/,/g, ''));
             }
 
-            // Keyword matching for category
-            const lowerText = text.toLowerCase();
-            if (lowerText.includes('food') || lowerText.includes('restaurant') || lowerText.includes('grab')) {
-                form.setFieldsValue({ category: 'Food' });
-            } else if (lowerText.includes('transfer')) {
-                form.setFieldsValue({ category: 'Other' });
+            // Extract recipient name (Thai name pattern - คนที่โอนไปให้)
+            // Look for patterns like "ไปยัง", "โอนไป", "ผู้รับ", or Thai name patterns
+            let recipientName = '';
+
+            // Pattern 1: After "ไปยัง" or "โอนไป" or "ผู้รับ"
+            const recipientPatterns = [
+                /(?:ไปยัง|โอนไป|ผู้รับ|to|To|TO)[:\s]*([ก-๙a-zA-Z\s]+)/,
+                /(?:นาย|นาง|นางสาว|Mr\.|Mrs\.|Ms\.)[ก-๙a-zA-Z\s]+/,
+            ];
+
+            for (const pattern of recipientPatterns) {
+                const match = text.match(pattern);
+                if (match) {
+                    recipientName = match[1] || match[0];
+                    recipientName = recipientName.trim().substring(0, 50); // Limit length
+                    break;
+                }
             }
+
+            // If no recipient found, try to get any Thai name-like pattern
+            if (!recipientName) {
+                const thaiNameMatch = text.match(/[ก-๙]{2,}\s+[ก-๙]{2,}/);
+                if (thaiNameMatch) {
+                    recipientName = thaiNameMatch[0].trim();
+                }
+            }
+
+            if (amount <= 0) {
+                message.warning('ไม่สามารถอ่านจำนวนเงินจากสลิปได้');
+                setScanning(false);
+                return false;
+            }
+
+            // Create transaction data and submit directly
+            const transactionData = {
+                type: 'expense',
+                amount: amount,
+                category: 'สลิป',
+                description: recipientName || 'สลิปโอนเงิน',
+            };
+
+            message.success(`บันทึกสลิป: ${amount} บาท - ${recipientName || 'สลิปโอนเงิน'}`);
+
+            // Close modal and submit
+            onFinish(transactionData);
 
         } catch (error) {
             console.error(error);
-            message.error('Failed to scan receipt');
+            message.error('ไม่สามารถอ่านสลิปได้');
         } finally {
             setScanning(false);
         }
@@ -126,6 +161,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                             <Select.Option value="Salary">Salary</Select.Option>
                             <Select.Option value="Entertainment">Entertainment</Select.Option>
                             <Select.Option value="Utilities">Utilities</Select.Option>
+                            <Select.Option value="สลิป">สลิป</Select.Option>
                             <Select.Option value="Other">Other</Select.Option>
                         </Select>
                     </Form.Item>
