@@ -66,4 +66,18 @@ describe('TransactionForm', () => {
             expect(screen.getAllByText('Please input amount!').length).toBeGreaterThan(0);
         });
     });
+
+    it('removes content from DOM when visible becomes false', async () => {
+        const { rerender } = render(<TransactionForm {...defaultProps} visible={true} />);
+        expect(screen.getByText('Add Transaction')).toBeInTheDocument();
+
+        rerender(<TransactionForm {...defaultProps} visible={false} />);
+
+        await waitFor(() => {
+            // Ant Modal with destroyOnHidden should remove content
+            // Note: Antd Modal might keep the container but empty it, or remove the portal. 
+            // queryByText should return null.
+            expect(screen.queryByText('Add Transaction')).not.toBeInTheDocument();
+        }, { timeout: 1000 }); // Animation might take time
+    });
 });
