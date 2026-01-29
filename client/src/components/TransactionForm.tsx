@@ -82,6 +82,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             onCancel={onCancel}
             onOk={() => form.submit()}
             confirmLoading={loading}
+            destroyOnHidden={true}
         >
             <div style={{ marginBottom: 20, textAlign: 'center' }}>
                 <Upload beforeUpload={beforeUpload} showUploadList={false} accept="image/*">

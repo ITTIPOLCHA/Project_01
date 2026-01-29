@@ -53,6 +53,7 @@ const CalendarView: React.FC = () => {
                 open={isModalVisible}
                 onCancel={() => setIsModalVisible(false)}
                 footer={null}
+                destroyOnHidden={true}
             >
                 <List
                     itemLayout="horizontal"
