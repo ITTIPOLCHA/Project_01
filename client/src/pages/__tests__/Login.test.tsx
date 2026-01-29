@@ -51,7 +51,11 @@ describe('Login Page', () => {
         fireEvent.click(screen.getByRole('button', { name: /เข้าสู่ระบบ/i }));
 
         await waitFor(() => {
-            expect(authService.login).toHaveBeenCalledWith({ email: 'test@test.com', password: 'password' });
+            expect(authService.login).toHaveBeenCalledWith({
+                email: 'test@test.com',
+                password: 'password',
+                remember: true // Checkbox handles this, default might be true? Checked source: initialValues={{ remember: true }}
+            });
             expect(mockSetUser).toHaveBeenCalled();
             expect(mockNavigate).toHaveBeenCalledWith('/');
         });

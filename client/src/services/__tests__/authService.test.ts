@@ -20,10 +20,13 @@ describe('authService', () => {
         // Mock successful API response
         (api.post as any).mockResolvedValueOnce({ data: mockUser });
 
-        const userData = { email: 'test@example.com', password: 'password123' };
+        const userData = { email: 'test@example.com', password: 'password123', remember: true };
         const result = await authService.login(userData);
 
-        expect(api.post).toHaveBeenCalledWith('/auth/login', userData);
+        // Expected API call DOES NOT include 'remember'
+        const expectedCredentials = { email: 'test@example.com', password: 'password123' };
+        expect(api.post).toHaveBeenCalledWith('/auth/login', expectedCredentials);
+
         expect(result).toEqual(mockUser);
         expect(localStorage.getItem('user')).toEqual(JSON.stringify(mockUser));
     });
