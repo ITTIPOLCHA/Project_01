@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Calendar, Badge, message, Modal, List } from 'antd';
+import { Calendar, Badge, Modal, List } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useQuery } from '@tanstack/react-query';
 import transactionService from '../services/transactionService';
+import type { ITransaction } from '../types';
 
 const CalendarView: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
@@ -19,14 +20,14 @@ const CalendarView: React.FC = () => {
     });
 
     const getListData = (value: Dayjs) => {
-        return transactions.filter((t: any) => dayjs(t.date).isSame(value, 'day'));
+        return transactions.filter((t: ITransaction) => dayjs(t.date).isSame(value, 'day'));
     };
 
     const dateCellRender = (value: Dayjs) => {
         const listData = getListData(value);
         return (
             <ul className="events" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                {listData.map((item: any) => (
+                {listData.map((item: ITransaction) => (
                     <li key={item._id}>
                         <Badge status={item.type === 'income' ? 'success' : 'error'} text={`$${item.amount}`} />
                     </li>
@@ -56,7 +57,7 @@ const CalendarView: React.FC = () => {
                 <List
                     itemLayout="horizontal"
                     dataSource={selectedDate ? getListData(selectedDate) : []}
-                    renderItem={(item: any) => (
+                    renderItem={(item: ITransaction) => (
                         <List.Item>
                             <List.Item.Meta
                                 avatar={<Badge status={item.type === 'income' ? 'success' : 'error'} />}
