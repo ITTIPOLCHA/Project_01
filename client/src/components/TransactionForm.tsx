@@ -8,7 +8,7 @@ interface TransactionFormProps {
     visible: boolean;
     onCancel: () => void;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onFinish: (values: any) => void;
+    onFinish: (values: any) => Promise<void>;
     initialValues?: Partial<ITransaction>;
     loading: boolean;
 }
@@ -39,9 +39,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     const handleScan = async (file: any) => {
         setScanning(true);
         try {
-            const result = await Tesseract.recognize(file, 'tha+eng', {
-                logger: m => console.log(m)
-            });
+            const result = await Tesseract.recognize(file, 'tha+eng');
             const text = result.data.text;
             console.log('OCR Text:', text);
 
@@ -96,7 +94,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             message.success(`บันทึกสลิป: ${amount} บาท - ${recipientName || 'สลิปโอนเงิน'}`);
 
             // Close modal and submit
-            onFinish(transactionData);
+            await onFinish(transactionData);
 
         } catch (error) {
             console.error(error);

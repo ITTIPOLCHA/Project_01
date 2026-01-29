@@ -1,33 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Card, Col, Row, Statistic, message } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, DollarOutlined } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
 import transactionService from '../services/transactionService';
 import type { ITransaction } from '../types';
 
 const Dashboard: React.FC = () => {
-    const [income, setIncome] = useState(0);
-    const [expense, setExpense] = useState(0);
-    const [balance, setBalance] = useState(0);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await transactionService.getTransactions();
-                const txs = res.data;
-                // setTransactions(txs); // Removed unused state set
+    // Fetch transactions using React Query
+    const { data: transactions = [], isError } = useQuery({
+        queryKey: ['transactions'],
+        queryFn: async () => {
+            const res = await transactionService.getTransactions();
+            return res.data;
+        },
+        staleTime: 1000 * 60 * 5, // Keep data fresh for 5 mins (or until invalidated)
+    });
 
-                const inc = txs.filter((t: ITransaction) => t.type === 'income').reduce((acc: number, t: ITransaction) => acc + t.amount, 0);
-                const exp = txs.filter((t: ITransaction) => t.type === 'expense').reduce((acc: number, t: ITransaction) => acc + t.amount, 0);
+    if (isError) {
+        message.error('Failed to load dashboard data');
+    }
 
-                setIncome(inc);
-                setExpense(exp);
-                setBalance(inc - exp);
-            } catch {
-                message.error('Failed to load data');
-            }
+    // Calculate statistics using useMemo to avoid re-calculation on every render
+    const { income, expense, balance } = useMemo(() => {
+        const inc = transactions.filter((t: ITransaction) => t.type === 'income').reduce((acc: number, t: ITransaction) => acc + t.amount, 0);
+        const exp = transactions.filter((t: ITransaction) => t.type === 'expense').reduce((acc: number, t: ITransaction) => acc + t.amount, 0);
+        return {
+            income: inc,
+            expense: exp,
+            balance: inc - exp
         };
-        fetchData();
-    }, []);
+    }, [transactions]);
 
     return (
         <div>

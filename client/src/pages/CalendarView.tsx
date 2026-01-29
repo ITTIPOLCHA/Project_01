@@ -1,36 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Calendar, Badge, message, Modal, List } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
+import { useQuery } from '@tanstack/react-query';
 import transactionService from '../services/transactionService';
-import type { ITransaction } from '../types';
 
 const CalendarView: React.FC = () => {
-    const [transactions, setTransactions] = useState<ITransaction[]>([]);
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
 
-    useEffect(() => {
-        const fetchTransactions = async () => {
-            try {
-                const res = await transactionService.getTransactions();
-                setTransactions(res.data);
-            } catch {
-                message.error('Failed to load transactions');
-            }
-        };
-        fetchTransactions();
-    }, []);
+    const { data: transactions = [] } = useQuery({
+        queryKey: ['transactions'],
+        queryFn: async () => {
+            const res = await transactionService.getTransactions();
+            return res.data;
+        },
+        staleTime: 1000 * 60 * 5,
+    });
 
     const getListData = (value: Dayjs) => {
-        return transactions.filter(t => dayjs(t.date).isSame(value, 'day'));
+        return transactions.filter((t: any) => dayjs(t.date).isSame(value, 'day'));
     };
 
     const dateCellRender = (value: Dayjs) => {
         const listData = getListData(value);
         return (
             <ul className="events" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                {listData.map((item) => (
+                {listData.map((item: any) => (
                     <li key={item._id}>
                         <Badge status={item.type === 'income' ? 'success' : 'error'} text={`$${item.amount}`} />
                     </li>
@@ -60,7 +56,7 @@ const CalendarView: React.FC = () => {
                 <List
                     itemLayout="horizontal"
                     dataSource={selectedDate ? getListData(selectedDate) : []}
-                    renderItem={(item) => (
+                    renderItem={(item: any) => (
                         <List.Item>
                             <List.Item.Meta
                                 avatar={<Badge status={item.type === 'income' ? 'success' : 'error'} />}

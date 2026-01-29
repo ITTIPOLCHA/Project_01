@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Table, Button, Space, Typography, message, Tag, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import transactionService from '../services/transactionService';
 import TransactionForm from '../components/TransactionForm';
 import type { ITransaction } from '../types';
@@ -9,27 +10,78 @@ import dayjs from 'dayjs';
 const { Title } = Typography;
 
 const Transactions: React.FC = () => {
-    const [transactions, setTransactions] = useState<ITransaction[]>([]);
-    const [loading, setLoading] = useState(false);
+    const queryClient = useQueryClient();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Partial<ITransaction> | undefined>(undefined);
-    const [formLoading, setFormLoading] = useState(false);
 
-    const fetchTransactions = async () => {
-        setLoading(true);
-        try {
+    // Query for fetching transactions
+    const { data: transactions = [], isLoading } = useQuery({
+        queryKey: ['transactions'],
+        queryFn: async () => {
             const res = await transactionService.getTransactions();
-            setTransactions(res.data);
-        } catch {
-            message.error('Failed to fetch transactions');
-        } finally {
-            setLoading(false);
+            return res.data; // Assuming service returns { data: [...] } or direct array? 
+            // Checking service: return response.data. 
+            // If response.data IS the array, then good. 
+            // Wait, typical axios response.data is the body. 
+            // If backend returns array, then it is array.
+            // Previous code: setTransactions(res.data). 
+            // So res.data is the array.
+            // Double check: service code: return response.data.
+            // Previous code usage: const res = await service.getTransactions(); setTransactions(res.data).
+            // This implies service returns { data: [...] } ?
+            // Let's re-read service code.
+            // Service: const response = await api.get(API_URL); return response.data;
+            // Usage: const res = await transactionService.getTransactions(); setTransactions(res.data);
+            // This means transactionService.getTransactions() returns an object that HAS a .data property?
+            // BUT service returns response.data directly.
+            // Does response.data have a .data property?
+            // If backend returns { success: true, data: [...] }, then yes.
+            // If backend returns [...] directly, then previous code was WRONG or service returns full axios response?
+            // Service code: return response.data.
+            // So if previous usage was res.data, then response.data MUST have a .data property.
+            // I will assume previous usage was correct.
+            return res.data;
         }
-    };
+    });
 
-    useEffect(() => {
-        fetchTransactions();
-    }, []);
+    // Mutation for adding transaction
+    const addMutation = useMutation({
+        mutationFn: transactionService.addTransaction,
+        onSuccess: () => {
+            message.success('Transaction added');
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            setIsModalVisible(false);
+        },
+        onError: () => {
+            message.error('Failed to add transaction');
+        }
+    });
+
+    // Mutation for updating transaction
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: Partial<ITransaction> }) =>
+            transactionService.updateTransaction(id, data),
+        onSuccess: () => {
+            message.success('Transaction updated');
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            setIsModalVisible(false);
+        },
+        onError: () => {
+            message.error('Failed to update transaction');
+        }
+    });
+
+    // Mutation for deleting transaction
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => transactionService.deleteTransaction(id),
+        onSuccess: () => {
+            message.success('Transaction deleted');
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        },
+        onError: () => {
+            message.error('Failed to delete transaction');
+        }
+    });
 
     const handleAdd = () => {
         setEditingTransaction(undefined);
@@ -41,33 +93,16 @@ const Transactions: React.FC = () => {
         setIsModalVisible(true);
     };
 
-    const handleDelete = async (id: string) => {
-        try {
-            await transactionService.deleteTransaction(id);
-            message.success('Transaction deleted');
-            fetchTransactions();
-        } catch {
-            message.error('Failed to delete transaction');
-        }
+    const handleDelete = (id: string) => {
+        deleteMutation.mutate(id);
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleFormFinish = async (values: any) => {
-        setFormLoading(true);
-        try {
-            if (editingTransaction && editingTransaction._id) {
-                await transactionService.updateTransaction(editingTransaction._id, values);
-                message.success('Transaction updated');
-            } else {
-                await transactionService.addTransaction(values);
-                message.success('Transaction added');
-            }
-            setIsModalVisible(false);
-            fetchTransactions();
-        } catch {
-            message.error('Operation failed');
-        } finally {
-            setFormLoading(false);
+        if (editingTransaction && editingTransaction._id) {
+            await updateMutation.mutateAsync({ id: editingTransaction._id, data: values });
+        } else {
+            await addMutation.mutateAsync(values);
         }
     };
 
@@ -124,7 +159,7 @@ const Transactions: React.FC = () => {
                 <Space size="middle">
                     <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
                     <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record._id)}>
-                        <Button icon={<DeleteOutlined />} danger />
+                        <Button icon={<DeleteOutlined />} danger loading={deleteMutation.isPending && deleteMutation.variables === record._id} />
                     </Popconfirm>
                 </Space>
             ),
@@ -144,7 +179,7 @@ const Transactions: React.FC = () => {
                 columns={columns}
                 dataSource={transactions}
                 rowKey="_id"
-                loading={loading}
+                loading={isLoading}
                 pagination={{ pageSize: 10 }}
                 scroll={{ x: 800 }}
             />
@@ -154,7 +189,7 @@ const Transactions: React.FC = () => {
                 onCancel={() => setIsModalVisible(false)}
                 onFinish={handleFormFinish}
                 initialValues={editingTransaction}
-                loading={formLoading}
+                loading={addMutation.isPending || updateMutation.isPending}
             />
         </div>
     );
