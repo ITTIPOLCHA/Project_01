@@ -133,8 +133,8 @@ const Transactions: React.FC = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <Title level={3}>Transactions</Title>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12 }}>
+                <Title level={3} style={{ margin: 0 }}>Transactions</Title>
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
                     Add Transaction
                 </Button>
@@ -146,6 +146,7 @@ const Transactions: React.FC = () => {
                 rowKey="_id"
                 loading={loading}
                 pagination={{ pageSize: 10 }}
+                scroll={{ x: 800 }}
             />
 
             <TransactionForm

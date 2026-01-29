@@ -48,7 +48,7 @@ const CalendarView: React.FC = () => {
     };
 
     return (
-        <>
+        <div style={{ width: '100%', overflow: 'auto' }}>
             <Calendar dateCellRender={dateCellRender} onSelect={onSelect} />
 
             <Modal
@@ -71,7 +71,7 @@ const CalendarView: React.FC = () => {
                     )}
                 />
             </Modal>
-        </>
+        </div>
     );
 };
 

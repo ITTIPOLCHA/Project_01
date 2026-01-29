@@ -32,8 +32,8 @@ const Dashboard: React.FC = () => {
     return (
         <div>
             <h2 style={{ marginBottom: 20 }}>Dashboard</h2>
-            <Row gutter={16}>
-                <Col span={8}>
+            <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12} lg={8}>
                     <Card bordered={false}>
                         <Statistic
                             title="Total Balance"
@@ -44,7 +44,7 @@ const Dashboard: React.FC = () => {
                         />
                     </Card>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} sm={12} lg={8}>
                     <Card bordered={false}>
                         <Statistic
                             title="Income"
@@ -55,10 +55,10 @@ const Dashboard: React.FC = () => {
                         />
                     </Card>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} sm={12} lg={8}>
                     <Card bordered={false}>
                         <Statistic
-                            title="Exprnse"
+                            title="Expense"
                             value={expense}
                             precision={2}
                             valueStyle={{ color: '#cf1322' }}

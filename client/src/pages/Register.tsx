@@ -30,8 +30,8 @@ const Register: React.FC = () => {
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f2f5' }}>
-            <Card style={{ width: 400 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f0f2f5', padding: '16px' }}>
+            <Card style={{ width: '100%', maxWidth: 400 }}>
                 <div style={{ textAlign: 'center', marginBottom: 20 }}>
                     <Title level={2}>Expense Tracker</Title>
                     <Title level={4}>Register</Title>
